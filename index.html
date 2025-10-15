@@ -1,0 +1,1348 @@
+<!DOCTYPE html>
+<html lang="pt-BR">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Ficha de Jogador - Covil de Dragões</title>
+    <style>
+        :root {
+            --dark-bg: #1a1a2e;
+            --card-bg: #16213e;
+            --accent: #0f3460;
+            --highlight: #e94560;
+            --text: #f1f1f1;
+            --border: #2d4059;
+            --success: #38b000;
+            --danger: #e94560;
+        }
+        
+        * {
+            box-sizing: border-box;
+            margin: 0;
+            padding: 0;
+            font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+        }
+        
+        body {
+            background-color: var(--dark-bg);
+            color: var(--text);
+            padding: 20px;
+            max-width: 900px;
+            margin: 0 auto;
+        }
+        
+        .character-sheet {
+            background-color: var(--card-bg);
+            border-radius: 10px;
+            padding: 20px;
+            box-shadow: 0 5px 15px rgba(0, 0, 0, 0.5);
+            position: relative;
+        }
+        
+        .header {
+            display: flex;
+            align-items: center;
+            margin-bottom: 25px;
+            padding-bottom: 15px;
+            border-bottom: 2px solid var(--border);
+        }
+        
+        .header img {
+            max-height: 80px;
+            margin-right: 20px;
+        }
+        
+        .header h1 {
+            color: var(--highlight);
+            font-size: 1.8rem;
+            flex-grow: 1;
+        }
+        
+        /* Menu Styles */
+        .menu-container {
+            position: absolute;
+            top: 20px;
+            right: 20px;
+        }
+        
+        .menu-button {
+            background-color: var(--accent);
+            color: white;
+            border: none;
+            border-radius: 4px;
+            padding: 8px 15px;
+            cursor: pointer;
+            font-size: 0.9rem;
+            transition: background-color 0.3s;
+        }
+        
+        .menu-button:hover {
+            background-color: var(--highlight);
+        }
+        
+        .menu-dropdown {
+            position: absolute;
+            top: 100%;
+            right: 0;
+            background-color: var(--card-bg);
+            border: 1px solid var(--border);
+            border-radius: 4px;
+            padding: 10px 0;
+            min-width: 180px;
+            box-shadow: 0 4px 8px rgba(0, 0, 0, 0.3);
+            z-index: 100;
+            display: none;
+        }
+        
+        .menu-dropdown.show {
+            display: block;
+        }
+        
+        .menu-item {
+            padding: 8px 15px;
+            cursor: pointer;
+            transition: background-color 0.2s;
+        }
+        
+        .menu-item:hover {
+            background-color: rgba(255, 255, 255, 0.1);
+        }
+        
+        .menu-item.danger {
+            color: var(--danger);
+        }
+        
+        .menu-item.danger:hover {
+            background-color: rgba(233, 69, 96, 0.2);
+        }
+        
+        /* Modal Styles */
+        .modal {
+            display: none;
+            position: fixed;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            background-color: rgba(0, 0, 0, 0.7);
+            z-index: 1000;
+            align-items: center;
+            justify-content: center;
+        }
+        
+        .modal.show {
+            display: flex;
+        }
+        
+        .modal-content {
+            background-color: var(--card-bg);
+            border-radius: 8px;
+            padding: 20px;
+            max-width: 500px;
+            width: 90%;
+            max-height: 80vh;
+            overflow-y: auto;
+            border: 1px solid var(--border);
+        }
+        
+        .modal-header {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            margin-bottom: 15px;
+            border-bottom: 1px solid var(--border);
+            padding-bottom: 10px;
+        }
+        
+        .modal-title {
+            font-size: 1.3rem;
+            color: var(--highlight);
+            margin: 0;
+        }
+        
+        .close-button {
+            background: none;
+            border: none;
+            color: var(--text);
+            font-size: 1.5rem;
+            cursor: pointer;
+            padding: 0;
+            width: 30px;
+            height: 30px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+        }
+        
+        .close-button:hover {
+            color: var(--highlight);
+        }
+        
+        .modal-actions {
+            display: flex;
+            gap: 10px;
+            justify-content: flex-end;
+            margin-top: 20px;
+        }
+        
+        .btn {
+            padding: 8px 15px;
+            border: none;
+            border-radius: 4px;
+            cursor: pointer;
+            font-size: 0.9rem;
+            transition: background-color 0.3s;
+        }
+        
+        .btn-primary {
+            background-color: var(--accent);
+            color: white;
+        }
+        
+        .btn-primary:hover {
+            background-color: var(--highlight);
+        }
+        
+        .btn-danger {
+            background-color: var(--danger);
+            color: white;
+        }
+        
+        .btn-danger:hover {
+            background-color: #d1345e;
+        }
+        
+        .btn-secondary {
+            background-color: rgba(255, 255, 255, 0.1);
+            color: var(--text);
+        }
+        
+        .btn-secondary:hover {
+            background-color: rgba(255, 255, 255, 0.2);
+        }
+        
+        .history-list {
+            max-height: 300px;
+            overflow-y: auto;
+            margin-bottom: 15px;
+        }
+        
+        .history-item {
+            padding: 8px 10px;
+            border-bottom: 1px solid rgba(255, 255, 255, 0.1);
+            display: flex;
+            justify-content: space-between;
+        }
+        
+        .history-item:last-child {
+            border-bottom: none;
+        }
+        
+        .history-total {
+            font-weight: bold;
+        }
+        
+        .history-total.critical-success {
+            color: var(--success);
+        }
+        
+        .history-total.critical-failure {
+            color: var(--danger);
+        }
+        
+        .save-notification {
+            position: fixed;
+            top: 20px;
+            right: 20px;
+            background-color: var(--success);
+            color: white;
+            padding: 10px 15px;
+            border-radius: 4px;
+            box-shadow: 0 2px 5px rgba(0, 0, 0, 0.3);
+            z-index: 1001;
+            display: none;
+        }
+        
+        .save-notification.show {
+            display: block;
+            animation: fadeInOut 3s ease-in-out;
+        }
+        
+        @keyframes fadeInOut {
+            0% { opacity: 0; transform: translateY(-10px); }
+            20% { opacity: 1; transform: translateY(0); }
+            80% { opacity: 1; transform: translateY(0); }
+            100% { opacity: 0; transform: translateY(-10px); }
+        }
+        
+        .section {
+            margin-bottom: 20px;
+            padding: 15px;
+            border: 1px solid var(--border);
+            border-radius: 8px;
+            background-color: rgba(15, 52, 96, 0.2);
+        }
+        
+        .section-title {
+            font-weight: bold;
+            margin-bottom: 15px;
+            color: var(--highlight);
+            border-bottom: 1px solid var(--border);
+            padding-bottom: 5px;
+            font-size: 1.2rem;
+        }
+        
+        .input-field {
+            width: 100%;
+            padding: 8px 10px;
+            margin-bottom: 10px;
+            border: 1px solid var(--border);
+            border-radius: 4px;
+            background-color: rgba(255, 255, 255, 0.1);
+            color: var(--text);
+        }
+        
+        .input-field:focus {
+            outline: none;
+            border-color: var(--highlight);
+        }
+        
+        .stats-grid {
+            display: grid;
+            grid-template-columns: repeat(4, 1fr);
+            gap: 15px;
+        }
+        
+        .stat-box {
+            text-align: center;
+            background-color: rgba(15, 52, 96, 0.3);
+            padding: 10px;
+            border-radius: 6px;
+            position: relative;
+        }
+        
+        .stat-box label {
+            display: block;
+            margin-bottom: 5px;
+            font-weight: bold;
+        }
+        
+        .stat-box input {
+            width: 100%;
+            text-align: center;
+            font-size: 18px;
+            font-weight: bold;
+            background-color: rgba(255, 255, 255, 0.1);
+            border: 1px solid var(--border);
+            border-radius: 4px;
+            color: var(--text);
+            padding: 5px;
+        }
+        
+        .roll-btn {
+            padding: 5px 10px;
+            background-color: var(--accent);
+            color: white;
+            border: none;
+            border-radius: 4px;
+            cursor: pointer;
+            font-size: 0.9rem;
+            transition: background-color 0.3s;
+        }
+        
+        .roll-btn:hover {
+            background-color: var(--highlight);
+        }
+        
+        .roll-interface {
+            display: flex;
+            align-items: center;
+            flex-wrap: wrap;
+            gap: 10px;
+            margin-top: 15px;
+            padding: 10px;
+            background-color: rgba(15, 52, 96, 0.3);
+            border-radius: 6px;
+        }
+        
+        .roll-interface select,
+        .roll-interface input {
+            padding: 5px 8px;
+            border: 1px solid var(--border);
+            border-radius: 4px;
+            background-color: rgba(255, 255, 255, 0.1);
+            color: var(--text);
+        }
+        
+        /* Cor preta para as opções do select */
+        .roll-interface select option {
+            color: black;
+            background-color: white;
+        }
+        
+        .roll-interface label {
+            display: flex;
+            align-items: center;
+            gap: 5px;
+            white-space: nowrap;
+        }
+        
+        .roll-result {
+            display: flex;
+            align-items: center;
+            gap: 8px;
+            font-size: 1rem;
+            font-weight: bold;
+            padding: 5px 10px;
+            border-radius: 4px;
+            background-color: rgba(255, 255, 255, 0.1);
+        }
+        
+        .result-total {
+            font-size: 1.2rem;
+            min-width: 30px;
+            text-align: center;
+        }
+        
+        .critical-success .result-total {
+            color: var(--success);
+        }
+        
+        .critical-failure .result-total {
+            color: var(--danger);
+        }
+        
+        .result-breakdown {
+            font-size: 0.9rem;
+            opacity: 0.8;
+        }
+        
+        .weapons-grid {
+            display: grid;
+            grid-template-columns: 1fr 1fr;
+            gap: 20px;
+        }
+        
+        .weapon-box {
+            border: 1px solid var(--border);
+            padding: 15px;
+            border-radius: 8px;
+            background-color: rgba(15, 52, 96, 0.2);
+        }
+        
+        .weapon-stats {
+            display: grid;
+            grid-template-columns: 1fr 1fr;
+            gap: 10px;
+            margin-bottom: 10px;
+        }
+        
+        .checkbox-group {
+            display: flex;
+            justify-content: space-between;
+            margin-top: 10px;
+        }
+        
+        .checkbox-group label {
+            display: flex;
+            align-items: center;
+        }
+        
+        .checkbox-group input {
+            margin-right: 5px;
+        }
+        
+        .skills-box textarea,
+        .vantagens-box textarea,
+        .inventory-box textarea {
+            height: 120px;
+            resize: vertical;
+        }
+        
+        .bar-container {
+            margin-bottom: 15px;
+        }
+        
+        .bar-label {
+            display: flex;
+            justify-content: space-between;
+            margin-bottom: 5px;
+        }
+        
+        .bar {
+            height: 20px;
+            background-color: rgba(255, 255, 255, 0.1);
+            border-radius: 10px;
+            overflow: hidden;
+            position: relative;
+            cursor: pointer;
+        }
+        
+        .bar-fill {
+            height: 100%;
+            border-radius: 10px;
+            transition: width 0.3s ease;
+        }
+        
+        .hp-bar {
+            background: linear-gradient(to right, #e94560, #ff7b54);
+        }
+        
+        .defense-bar {
+            background: linear-gradient(to right, #4cc9f0, #4361ee);
+        }
+        
+        .durability-bar {
+            background: linear-gradient(to right, #38b000, #70e000);
+        }
+        
+        .bar-inputs {
+            display: flex;
+            justify-content: space-between;
+            margin-top: 5px;
+        }
+        
+        .bar-inputs input {
+            width: 48%;
+            padding: 3px 5px;
+            border: 1px solid var(--border);
+            border-radius: 3px;
+            background-color: rgba(255, 255, 255, 0.1);
+            color: var(--text);
+            text-align: center;
+        }
+        
+        .rd-container {
+            display: flex;
+            align-items: center;
+            margin-top: 15px;
+        }
+        
+        .rd-container label {
+            margin-right: 10px;
+            font-weight: bold;
+        }
+        
+        .rd-container input {
+            width: 80px;
+            padding: 5px 10px;
+            border: 1px solid var(--border);
+            border-radius: 4px;
+            background-color: rgba(255, 255, 255, 0.1);
+            color: var(--text);
+            text-align: center;
+        }
+        
+        .basic-info {
+            display: grid;
+            grid-template-columns: 1fr 1fr 1fr;
+            gap: 15px;
+        }
+        
+        .info-box {
+            display: flex;
+            flex-direction: column;
+        }
+        
+        .info-box label {
+            margin-bottom: 5px;
+            font-weight: bold;
+        }
+        
+        .footer {
+            text-align: right;
+            font-size: 12px;
+            color: #aaa;
+            margin-top: 20px;
+        }
+        
+        @media (max-width: 768px) {
+            .stats-grid {
+                grid-template-columns: repeat(2, 1fr);
+            }
+            
+            .weapons-grid {
+                grid-template-columns: 1fr;
+            }
+            
+            .basic-info {
+                grid-template-columns: 1fr;
+            }
+            
+            .header {
+                flex-direction: column;
+                text-align: center;
+            }
+            
+            .header img {
+                margin-right: 0;
+                margin-bottom: 10px;
+            }
+            
+            .roll-interface {
+                flex-direction: column;
+                align-items: flex-start;
+            }
+            
+            .menu-container {
+                position: static;
+                margin-top: 10px;
+                text-align: center;
+            }
+        }
+    </style>
+</head>
+<body>
+    <div class="save-notification" id="save-notification">Personagem salvo com sucesso!</div>
+    
+    <div class="character-sheet">
+        <!-- Menu -->
+        <div class="menu-container">
+            <button class="menu-button" id="menu-button">Menu</button>
+            <div class="menu-dropdown" id="menu-dropdown">
+                <div class="menu-item" id="view-history">Ver Histórico de Rolagem</div>
+                <div class="menu-item" id="save-character">Salvar Personagem</div>
+                <div class="menu-item danger" id="clear-data">Limpar Dados</div>
+            </div>
+        </div>
+        
+        <div class="header">
+            <img src="https://i.imgur.com/IyknQnH.png" alt="Covil de Dragões">
+            <h1>FICHA DE JOGADOR</h1>
+        </div>
+        
+        <div class="section">
+            <div class="section-title">INFORMAÇÕES BÁSICAS</div>
+            <input type="text" class="input-field" placeholder="NOME DO PERSONAGEM" id="character-name">
+            <div class="basic-info">
+                <div class="info-box">
+                    <label>NÍVEL</label>
+                    <input type="number" class="input-field" min="1" value="1" id="character-level">
+                </div>
+                <div class="info-box">
+                    <label>MISSÕES COMPLETAS</label>
+                    <input type="number" class="input-field" min="0" value="0" id="missions-completed">
+                </div>
+                <div class="info-box">
+                    <label>TESOUROS RECUPERADOS</label>
+                    <input type="number" class="input-field" min="0" value="0" id="treasures-recovered">
+                </div>
+            </div>
+        </div>
+        
+        <div class="section">
+            <div class="section-title">ATRIBUTOS</div>
+            <div class="stats-grid">
+                <div class="stat-box">
+                    <label>FOR</label>
+                    <input type="number" min="0" max="10" value="0" id="for-value">
+                </div>
+                <div class="stat-box">
+                    <label>AGI</label>
+                    <input type="number" min="0" max="10" value="0" id="agi-value">
+                </div>
+                <div class="stat-box">
+                    <label>INT</label>
+                    <input type="number" min="0" max="10" value="0" id="int-value">
+                </div>
+                <div class="stat-box">
+                    <label>CAR</label>
+                    <input type="number" min="0" max="10" value="0" id="car-value">
+                </div>
+            </div>
+            
+            <div class="roll-interface">
+                <select id="attribute-select">
+                    <option value="for">FOR</option>
+                    <option value="agi">AGI</option>
+                    <option value="int">INT</option>
+                    <option value="car">CAR</option>
+                </select>
+                <label>
+                    <input type="checkbox" id="pericia-check"> Perícia
+                </label>
+                <label>
+                    <input type="checkbox" id="atacante-implacavel-check"> Atacante Implacável
+                </label>
+                <input type="number" id="bonus-input" min="0" value="0" placeholder="Bônus">
+                <button class="roll-btn" id="roll-btn">Rolar Dados</button>
+                <div class="roll-result" id="roll-result">
+                    <span class="result-total">-</span>
+                    <span class="result-breakdown" id="result-breakdown"></span>
+                </div>
+            </div>
+        </div>
+        
+        <div class="section">
+            <div class="section-title">STATUS</div>
+            <div class="bar-container">
+                <div class="bar-label">
+                    <span>PONTOS DE VIDA (PV)</span>
+                    <span id="hp-value">10/10</span>
+                </div>
+                <div class="bar" id="hp-bar-container">
+                    <div class="bar-fill hp-bar" id="hp-bar" style="width: 100%"></div>
+                </div>
+                <div class="bar-inputs">
+                    <input type="number" id="hp-current" min="0" max="50" value="10" placeholder="Atual">
+                    <input type="number" id="hp-max" min="1" max="50" value="10" placeholder="Máximo">
+                </div>
+            </div>
+            
+            <div class="bar-container">
+                <div class="bar-label">
+                    <span>DEFESA</span>
+                    <span id="defense-value">10/10</span>
+                </div>
+                <div class="bar" id="defense-bar-container">
+                    <div class="bar-fill defense-bar" id="defense-bar" style="width: 100%"></div>
+                </div>
+                <div class="bar-inputs">
+                    <input type="number" id="defense-current" min="0" max="50" value="10" placeholder="Atual">
+                    <input type="number" id="defense-max" min="1" max="50" value="10" placeholder="Máximo">
+                </div>
+            </div>
+            
+            <div class="rd-container">
+                <label>RD</label>
+                <input type="number" id="rd-value" min="0" value="0">
+            </div>
+        </div>
+        
+        <div class="section">
+            <div class="section-title">ARMAS</div>
+            <div class="weapons-grid">
+                <div class="weapon-box">
+                    <input type="text" class="input-field" placeholder="NOME DA ARMA" id="weapon1-name">
+                    <div class="weapon-stats">
+                        <div>
+                            <label>ATAQUE</label>
+                            <input type="number" class="input-field" min="0" value="0" id="weapon1-attack">
+                        </div>
+                        <div>
+                            <label>DANO</label>
+                            <input type="number" class="input-field" min="0" value="0" id="weapon1-damage">
+                        </div>
+                    </div>
+                    <div class="bar-container">
+                        <div class="bar-label">
+                            <span>DURABILIDADE</span>
+                            <span id="durability1-value">10/10</span>
+                        </div>
+                        <div class="bar" id="durability1-bar-container">
+                            <div class="bar-fill durability-bar" id="durability1-bar" style="width: 100%"></div>
+                        </div>
+                        <div class="bar-inputs">
+                            <input type="number" id="durability1-current" min="0" max="50" value="10" placeholder="Atual">
+                            <input type="number" id="durability1-max" min="1" max="50" value="10" placeholder="Máximo">
+                        </div>
+                    </div>
+                    <div>
+                        <label>HABILIDADE ARMA</label>
+                        <input type="text" class="input-field" id="weapon1-ability">
+                    </div>
+                    <div class="checkbox-group">
+                        <label><input type="checkbox" id="weapon1-check20"> 20</label>
+                        <label><input type="checkbox" id="weapon1-check24"> 24</label>
+                        <label><input type="checkbox" id="weapon1-check28"> 28</label>
+                    </div>
+                </div>
+                
+                <div class="weapon-box">
+                    <input type="text" class="input-field" placeholder="NOME DA ARMA" id="weapon2-name">
+                    <div class="weapon-stats">
+                        <div>
+                            <label>ATAQUE</label>
+                            <input type="number" class="input-field" min="0" value="0" id="weapon2-attack">
+                        </div>
+                        <div>
+                            <label>DANO</label>
+                            <input type="number" class="input-field" min="0" value="0" id="weapon2-damage">
+                        </div>
+                    </div>
+                    <div class="bar-container">
+                        <div class="bar-label">
+                            <span>DURABILIDADE</span>
+                            <span id="durability2-value">10/10</span>
+                        </div>
+                        <div class="bar" id="durability2-bar-container">
+                            <div class="bar-fill durability-bar" id="durability2-bar" style="width: 100%"></div>
+                        </div>
+                        <div class="bar-inputs">
+                            <input type="number" id="durability2-current" min="0" max="50" value="10" placeholder="Atual">
+                            <input type="number" id="durability2-max" min="1" max="50" value="10" placeholder="Máximo">
+                        </div>
+                    </div>
+                    <div>
+                        <label>HABILIDADE ARMA</label>
+                        <input type="text" class="input-field" id="weapon2-ability">
+                    </div>
+                    <div class="checkbox-group">
+                        <label><input type="checkbox" id="weapon2-check20"> 20</label>
+                        <label><input type="checkbox" id="weapon2-check24"> 24</label>
+                        <label><input type="checkbox" id="weapon2-check28"> 28</label>
+                    </div>
+                </div>
+            </div>
+        </div>
+        
+        <div class="section">
+            <div class="section-title">PERÍCIAS</div>
+            <div class="skills-box">
+                <textarea class="input-field" placeholder="Liste suas perícias aqui..." id="skills-text"></textarea>
+            </div>
+        </div>
+        
+        <!-- NOVA SEÇÃO: VANTAGENS -->
+        <div class="section">
+            <div class="section-title">VANTAGENS</div>
+            <div class="vantagens-box">
+                <textarea class="input-field" placeholder="Liste suas vantagens aqui..." id="vantagens-text"></textarea>
+            </div>
+        </div>
+        
+        <div class="section">
+            <div class="section-title">INVENTÁRIO</div>
+            <div class="inventory-box">
+                <textarea class="input-field" placeholder="Liste seus itens aqui..." id="inventory-text"></textarea>
+            </div>
+            <div style="display: grid; grid-template-columns: 1fr 1fr; gap: 15px; margin-top: 15px;">
+                <div class="info-box">
+                    <label>LIMITE DE CARGA</label>
+                    <input type="number" class="input-field" min="0" value="0" id="load-limit">
+                </div>
+                <div class="info-box">
+                    <label>CARGA ATUAL</label>
+                    <input type="number" class="input-field" min="0" value="0" id="current-load">
+                </div>
+            </div>
+        </div>
+        
+        <div class="footer">
+            design by Ricardo Silva
+        </div>
+    </div>
+
+    <!-- Modal para Histórico de Rolagem -->
+    <div class="modal" id="history-modal">
+        <div class="modal-content">
+            <div class="modal-header">
+                <h3 class="modal-title">Histórico de Rolagem</h3>
+                <button class="close-button" id="close-history-modal">&times;</button>
+            </div>
+            <div class="history-list" id="history-list">
+                <!-- Histórico será inserido aqui via JavaScript -->
+            </div>
+            <button class="roll-btn" id="clear-history" style="width: 100%;">Limpar Histórico</button>
+        </div>
+    </div>
+
+    <!-- Modal para Confirmação de Limpeza -->
+    <div class="modal" id="clear-confirm-modal">
+        <div class="modal-content">
+            <div class="modal-header">
+                <h3 class="modal-title">Limpar Dados</h3>
+                <button class="close-button" id="close-clear-modal">&times;</button>
+            </div>
+            <p>Tem certeza que deseja limpar todos os dados do personagem? Esta ação não pode ser desfeita.</p>
+            <div class="modal-actions">
+                <button class="btn btn-secondary" id="cancel-clear">Cancelar</button>
+                <button class="btn btn-danger" id="confirm-clear">Limpar Tudo</button>
+            </div>
+        </div>
+    </div>
+
+    <script>
+        // Array para armazenar o histórico de rolagens
+        let rollHistory = [];
+        
+        // Função para atualizar as barras de status
+        function updateBar(barId, valueId, currentInputId, maxInputId) {
+            const current = parseInt(document.getElementById(currentInputId).value) || 0;
+            const max = parseInt(document.getElementById(maxInputId).value) || 1;
+            
+            // Garantir que os valores estejam dentro dos limites
+            if (current < 0) document.getElementById(currentInputId).value = 0;
+            if (max < 1) document.getElementById(maxInputId).value = 1;
+            if (current > max) document.getElementById(currentInputId).value = max;
+            
+            const percentage = Math.min(100, (current / max) * 100);
+            document.getElementById(barId).style.width = `${percentage}%`;
+            document.getElementById(valueId).textContent = `${current}/${max}`;
+        }
+        
+        // Configurar eventos para todas as barras
+        function setupBarEvents(currentInputId, maxInputId, barId, valueId) {
+            document.getElementById(currentInputId).addEventListener('input', () => {
+                updateBar(barId, valueId, currentInputId, maxInputId);
+            });
+            
+            document.getElementById(maxInputId).addEventListener('input', () => {
+                updateBar(barId, valueId, currentInputId, maxInputId);
+            });
+        }
+        
+        // Configurar interação de clique nas barras
+        function setupBarClick(barContainerId, currentInputId, maxInputId) {
+            const barContainer = document.getElementById(barContainerId);
+            const currentInput = document.getElementById(currentInputId);
+            
+            barContainer.addEventListener('click', (e) => {
+                const rect = barContainer.getBoundingClientRect();
+                const clickX = e.clientX - rect.left;
+                const percentage = clickX / rect.width;
+                
+                const max = parseInt(document.getElementById(maxInputId).value) || 1;
+                const newValue = Math.round(percentage * max);
+                
+                currentInput.value = Math.min(max, Math.max(0, newValue));
+                currentInput.dispatchEvent(new Event('input'));
+            });
+        }
+        
+        // Função para limpar todos os dados
+        function clearAllData() {
+            // Informações básicas
+            document.getElementById('character-name').value = '';
+            document.getElementById('character-level').value = 1;
+            document.getElementById('missions-completed').value = 0;
+            document.getElementById('treasures-recovered').value = 0;
+            
+            // Atributos
+            document.getElementById('for-value').value = 0;
+            document.getElementById('agi-value').value = 0;
+            document.getElementById('int-value').value = 0;
+            document.getElementById('car-value').value = 0;
+            
+            // Status
+            document.getElementById('hp-current').value = 10;
+            document.getElementById('hp-max').value = 10;
+            document.getElementById('defense-current').value = 10;
+            document.getElementById('defense-max').value = 10;
+            document.getElementById('rd-value').value = 0;
+            
+            // Armas
+            document.getElementById('weapon1-name').value = '';
+            document.getElementById('weapon1-attack').value = 0;
+            document.getElementById('weapon1-damage').value = 0;
+            document.getElementById('durability1-current').value = 10;
+            document.getElementById('durability1-max').value = 10;
+            document.getElementById('weapon1-ability').value = '';
+            document.getElementById('weapon1-check20').checked = false;
+            document.getElementById('weapon1-check24').checked = false;
+            document.getElementById('weapon1-check28').checked = false;
+            
+            document.getElementById('weapon2-name').value = '';
+            document.getElementById('weapon2-attack').value = 0;
+            document.getElementById('weapon2-damage').value = 0;
+            document.getElementById('durability2-current').value = 10;
+            document.getElementById('durability2-max').value = 10;
+            document.getElementById('weapon2-ability').value = '';
+            document.getElementById('weapon2-check20').checked = false;
+            document.getElementById('weapon2-check24').checked = false;
+            document.getElementById('weapon2-check28').checked = false;
+            
+            // Perícias, Vantagens e Inventário
+            document.getElementById('skills-text').value = '';
+            document.getElementById('vantagens-text').value = '';
+            document.getElementById('inventory-text').value = '';
+            document.getElementById('load-limit').value = 0;
+            document.getElementById('current-load').value = 0;
+            
+            // Interface de rolagem
+            document.getElementById('attribute-select').value = 'for';
+            document.getElementById('pericia-check').checked = false;
+            document.getElementById('atacante-implacavel-check').checked = false;
+            document.getElementById('bonus-input').value = 0;
+            document.getElementById('roll-result').querySelector('.result-total').textContent = '-';
+            document.getElementById('result-breakdown').textContent = '';
+            document.getElementById('roll-result').className = 'roll-result';
+            
+            // Limpar histórico
+            rollHistory = [];
+            
+            // Atualizar todas as barras
+            updateBar('hp-bar', 'hp-value', 'hp-current', 'hp-max');
+            updateBar('defense-bar', 'defense-value', 'defense-current', 'defense-max');
+            updateBar('durability1-bar', 'durability1-value', 'durability1-current', 'durability1-max');
+            updateBar('durability2-bar', 'durability2-value', 'durability2-current', 'durability2-max');
+            
+            // Limpar localStorage
+            localStorage.removeItem('characterData');
+            
+            console.log('Todos os dados foram limpos');
+        }
+        
+        // Função para rolar dados
+        function rollDice() {
+            // Rolar 2d6
+            const dice1 = Math.floor(Math.random() * 6) + 1;
+            const dice2 = Math.floor(Math.random() * 6) + 1;
+            const diceTotal = dice1 + dice2;
+            
+            // Obter atributo selecionado
+            const selectedAttribute = document.getElementById('attribute-select').value;
+            const attributeValue = parseInt(document.getElementById(`${selectedAttribute}-value`).value) || 0;
+            
+            // Verificar se Perícia está marcada
+            const periciaBonus = document.getElementById('pericia-check').checked ? 2 : 0;
+            
+            // Obter bônus adicional
+            const bonusValue = parseInt(document.getElementById('bonus-input').value) || 0;
+            
+            // Calcular resultado total
+            const total = diceTotal + attributeValue + periciaBonus + bonusValue;
+            
+            // Exibir resultado
+            const resultElement = document.getElementById('roll-result');
+            const totalElement = resultElement.querySelector('.result-total');
+            const breakdownElement = document.getElementById('result-breakdown');
+            
+            totalElement.textContent = total;
+            
+            // Criar breakdown dos valores
+            let breakdownText = `(${dice1}+${dice2}`;
+            if (attributeValue > 0) breakdownText += `+${attributeValue}`;
+            if (periciaBonus > 0) breakdownText += `+${periciaBonus}`;
+            if (bonusValue > 0) breakdownText += `+${bonusValue}`;
+            breakdownText += `)`;
+            
+            breakdownElement.textContent = breakdownText;
+            
+            // Verificar se é um crítico
+            const atacanteImplacavel = document.getElementById('atacante-implacavel-check').checked;
+            let isCriticalSuccess = false;
+            let isCriticalFailure = false;
+            
+            if ((dice1 === 6 && dice2 === 6) || (atacanteImplacavel && dice1 === 5 && dice2 === 5)) {
+                resultElement.className = 'roll-result critical-success';
+                isCriticalSuccess = true;
+            } else if (dice1 === 1 && dice2 === 1) {
+                resultElement.className = 'roll-result critical-failure';
+                isCriticalFailure = true;
+            } else {
+                resultElement.className = 'roll-result';
+            }
+            
+            // Adicionar ao histórico
+            const rollData = {
+                dice1,
+                dice2,
+                diceTotal,
+                attributeValue,
+                periciaBonus,
+                bonusValue,
+                total,
+                isCriticalSuccess,
+                isCriticalFailure,
+                timestamp: new Date().toLocaleString()
+            };
+            
+            rollHistory.unshift(rollData);
+            
+            // Limitar o histórico aos 20 últimos itens
+            if (rollHistory.length > 20) {
+                rollHistory = rollHistory.slice(0, 20);
+            }
+            
+            // Exibir detalhes da rolagem no console (opcional)
+            console.log(`Rolagem: ${dice1} + ${dice2} = ${diceTotal} + ${attributeValue} (atributo) + ${periciaBonus} (perícia) + ${bonusValue} (bônus) = ${total}`);
+            
+            return total;
+        }
+        
+        // Função para exibir o histórico de rolagens
+        function displayRollHistory() {
+            const historyList = document.getElementById('history-list');
+            historyList.innerHTML = '';
+            
+            if (rollHistory.length === 0) {
+                historyList.innerHTML = '<div class="history-item">Nenhuma rolagem registrada</div>';
+                return;
+            }
+            
+            rollHistory.forEach(roll => {
+                const historyItem = document.createElement('div');
+                historyItem.className = 'history-item';
+                
+                const breakdownText = `${roll.dice1}+${roll.dice2}${roll.attributeValue > 0 ? `+${roll.attributeValue}` : ''}${roll.periciaBonus > 0 ? `+${roll.periciaBonus}` : ''}${roll.bonusValue > 0 ? `+${roll.bonusValue}` : ''}`;
+                
+                const totalClass = roll.isCriticalSuccess ? 'critical-success' : (roll.isCriticalFailure ? 'critical-failure' : '');
+                
+                historyItem.innerHTML = `
+                    <div>
+                        <div>${breakdownText}</div>
+                        <div style="font-size: 0.8rem; opacity: 0.7;">${roll.timestamp}</div>
+                    </div>
+                    <div class="history-total ${totalClass}">${roll.total}</div>
+                `;
+                
+                historyList.appendChild(historyItem);
+            });
+        }
+        
+        // Função para salvar os dados do personagem
+        function saveCharacterData() {
+            const characterData = {
+                // Informações básicas
+                name: document.getElementById('character-name').value,
+                level: document.getElementById('character-level').value,
+                missions: document.getElementById('missions-completed').value,
+                treasures: document.getElementById('treasures-recovered').value,
+                
+                // Atributos
+                for: document.getElementById('for-value').value,
+                agi: document.getElementById('agi-value').value,
+                int: document.getElementById('int-value').value,
+                car: document.getElementById('car-value').value,
+                
+                // Status
+                hpCurrent: document.getElementById('hp-current').value,
+                hpMax: document.getElementById('hp-max').value,
+                defenseCurrent: document.getElementById('defense-current').value,
+                defenseMax: document.getElementById('defense-max').value,
+                rd: document.getElementById('rd-value').value,
+                
+                // Armas
+                weapon1: {
+                    name: document.getElementById('weapon1-name').value,
+                    attack: document.getElementById('weapon1-attack').value,
+                    damage: document.getElementById('weapon1-damage').value,
+                    durabilityCurrent: document.getElementById('durability1-current').value,
+                    durabilityMax: document.getElementById('durability1-max').value,
+                    ability: document.getElementById('weapon1-ability').value,
+                    check20: document.getElementById('weapon1-check20').checked,
+                    check24: document.getElementById('weapon1-check24').checked,
+                    check28: document.getElementById('weapon1-check28').checked
+                },
+                weapon2: {
+                    name: document.getElementById('weapon2-name').value,
+                    attack: document.getElementById('weapon2-attack').value,
+                    damage: document.getElementById('weapon2-damage').value,
+                    durabilityCurrent: document.getElementById('durability2-current').value,
+                    durabilityMax: document.getElementById('durability2-max').value,
+                    ability: document.getElementById('weapon2-ability').value,
+                    check20: document.getElementById('weapon2-check20').checked,
+                    check24: document.getElementById('weapon2-check24').checked,
+                    check28: document.getElementById('weapon2-check28').checked
+                },
+                
+                // Perícias, Vantagens e Inventário
+                skills: document.getElementById('skills-text').value,
+                vantagens: document.getElementById('vantagens-text').value,
+                inventory: document.getElementById('inventory-text').value,
+                loadLimit: document.getElementById('load-limit').value,
+                currentLoad: document.getElementById('current-load').value,
+                
+                // Histórico
+                rollHistory: rollHistory,
+                
+                // Timestamp
+                savedAt: new Date().toLocaleString()
+            };
+            
+            // Salvar no localStorage
+            localStorage.setItem('characterData', JSON.stringify(characterData));
+            
+            // Mostrar notificação
+            const notification = document.getElementById('save-notification');
+            notification.classList.add('show');
+            
+            setTimeout(() => {
+                notification.classList.remove('show');
+            }, 3000);
+            
+            console.log('Personagem salvo:', characterData);
+        }
+        
+        // Função para carregar os dados do personagem
+        function loadCharacterData() {
+            const savedData = localStorage.getItem('characterData');
+            
+            if (savedData) {
+                const characterData = JSON.parse(savedData);
+                
+                // Carregar informações básicas
+                document.getElementById('character-name').value = characterData.name || '';
+                document.getElementById('character-level').value = characterData.level || 1;
+                document.getElementById('missions-completed').value = characterData.missions || 0;
+                document.getElementById('treasures-recovered').value = characterData.treasures || 0;
+                
+                // Carregar atributos
+                document.getElementById('for-value').value = characterData.for || 0;
+                document.getElementById('agi-value').value = characterData.agi || 0;
+                document.getElementById('int-value').value = characterData.int || 0;
+                document.getElementById('car-value').value = characterData.car || 0;
+                
+                // Carregar status
+                document.getElementById('hp-current').value = characterData.hpCurrent || 10;
+                document.getElementById('hp-max').value = characterData.hpMax || 10;
+                document.getElementById('defense-current').value = characterData.defenseCurrent || 10;
+                document.getElementById('defense-max').value = characterData.defenseMax || 10;
+                document.getElementById('rd-value').value = characterData.rd || 0;
+                
+                // Carregar armas
+                document.getElementById('weapon1-name').value = characterData.weapon1?.name || '';
+                document.getElementById('weapon1-attack').value = characterData.weapon1?.attack || 0;
+                document.getElementById('weapon1-damage').value = characterData.weapon1?.damage || 0;
+                document.getElementById('durability1-current').value = characterData.weapon1?.durabilityCurrent || 10;
+                document.getElementById('durability1-max').value = characterData.weapon1?.durabilityMax || 10;
+                document.getElementById('weapon1-ability').value = characterData.weapon1?.ability || '';
+                document.getElementById('weapon1-check20').checked = characterData.weapon1?.check20 || false;
+                document.getElementById('weapon1-check24').checked = characterData.weapon1?.check24 || false;
+                document.getElementById('weapon1-check28').checked = characterData.weapon1?.check28 || false;
+                
+                document.getElementById('weapon2-name').value = characterData.weapon2?.name || '';
+                document.getElementById('weapon2-attack').value = characterData.weapon2?.attack || 0;
+                document.getElementById('weapon2-damage').value = characterData.weapon2?.damage || 0;
+                document.getElementById('durability2-current').value = characterData.weapon2?.durabilityCurrent || 10;
+                document.getElementById('durability2-max').value = characterData.weapon2?.durabilityMax || 10;
+                document.getElementById('weapon2-ability').value = characterData.weapon2?.ability || '';
+                document.getElementById('weapon2-check20').checked = characterData.weapon2?.check20 || false;
+                document.getElementById('weapon2-check24').checked = characterData.weapon2?.check24 || false;
+                document.getElementById('weapon2-check28').checked = characterData.weapon2?.check28 || false;
+                
+                // Carregar perícias, vantagens e inventário
+                document.getElementById('skills-text').value = characterData.skills || '';
+                document.getElementById('vantagens-text').value = characterData.vantagens || '';
+                document.getElementById('inventory-text').value = characterData.inventory || '';
+                document.getElementById('load-limit').value = characterData.loadLimit || 0;
+                document.getElementById('current-load').value = characterData.currentLoad || 0;
+                
+                // Carregar histórico
+                rollHistory = characterData.rollHistory || [];
+                
+                // Atualizar todas as barras
+                updateBar('hp-bar', 'hp-value', 'hp-current', 'hp-max');
+                updateBar('defense-bar', 'defense-value', 'defense-current', 'defense-max');
+                updateBar('durability1-bar', 'durability1-value', 'durability1-current', 'durability1-max');
+                updateBar('durability2-bar', 'durability2-value', 'durability2-current', 'durability2-max');
+                
+                console.log('Personagem carregado:', characterData);
+            }
+        }
+        
+        // Inicializar todas as barras e eventos
+        document.addEventListener('DOMContentLoaded', () => {
+            // Configurar barras de PV
+            setupBarEvents('hp-current', 'hp-max', 'hp-bar', 'hp-value');
+            setupBarClick('hp-bar-container', 'hp-current', 'hp-max');
+            
+            // Configurar barras de Defesa
+            setupBarEvents('defense-current', 'defense-max', 'defense-bar', 'defense-value');
+            setupBarClick('defense-bar-container', 'defense-current', 'defense-max');
+            
+            // Configurar barras de Durabilidade
+            setupBarEvents('durability1-current', 'durability1-max', 'durability1-bar', 'durability1-value');
+            setupBarClick('durability1-bar-container', 'durability1-current', 'durability1-max');
+            
+            setupBarEvents('durability2-current', 'durability2-max', 'durability2-bar', 'durability2-value');
+            setupBarClick('durability2-bar-container', 'durability2-current', 'durability2-max');
+            
+            // Atualizar todas as barras inicialmente
+            updateBar('hp-bar', 'hp-value', 'hp-current', 'hp-max');
+            updateBar('defense-bar', 'defense-value', 'defense-current', 'defense-max');
+            updateBar('durability1-bar', 'durability1-value', 'durability1-current', 'durability1-max');
+            updateBar('durability2-bar', 'durability2-value', 'durability2-current', 'durability2-max');
+            
+            // Configurar campo RD
+            document.getElementById('rd-value').addEventListener('input', () => {
+                const rdValue = document.getElementById('rd-value').value;
+                console.log(`RD atualizado para: ${rdValue}`);
+            });
+            
+            // Configurar botão de rolagem principal
+            document.getElementById('roll-btn').addEventListener('click', () => {
+                rollDice();
+            });
+            
+            // Configurar menu
+            const menuButton = document.getElementById('menu-button');
+            const menuDropdown = document.getElementById('menu-dropdown');
+            
+            menuButton.addEventListener('click', (e) => {
+                e.stopPropagation();
+                menuDropdown.classList.toggle('show');
+            });
+            
+            // Fechar menu ao clicar fora
+            document.addEventListener('click', () => {
+                menuDropdown.classList.remove('show');
+            });
+            
+            // Prevenir fechamento ao clicar no menu
+            menuDropdown.addEventListener('click', (e) => {
+                e.stopPropagation();
+            });
+            
+            // Configurar opções do menu
+            document.getElementById('view-history').addEventListener('click', () => {
+                displayRollHistory();
+                document.getElementById('history-modal').classList.add('show');
+                menuDropdown.classList.remove('show');
+            });
+            
+            document.getElementById('save-character').addEventListener('click', () => {
+                saveCharacterData();
+                menuDropdown.classList.remove('show');
+            });
+            
+            document.getElementById('clear-data').addEventListener('click', () => {
+                document.getElementById('clear-confirm-modal').classList.add('show');
+                menuDropdown.classList.remove('show');
+            });
+            
+            // Configurar modais
+            document.getElementById('close-history-modal').addEventListener('click', () => {
+                document.getElementById('history-modal').classList.remove('show');
+            });
+            
+            document.getElementById('close-clear-modal').addEventListener('click', () => {
+                document.getElementById('clear-confirm-modal').classList.remove('show');
+            });
+            
+            document.getElementById('cancel-clear').addEventListener('click', () => {
+                document.getElementById('clear-confirm-modal').classList.remove('show');
+            });
+            
+            document.getElementById('confirm-clear').addEventListener('click', () => {
+                clearAllData();
+                document.getElementById('clear-confirm-modal').classList.remove('show');
+                
+                // Mostrar notificação
+                const notification = document.getElementById('save-notification');
+                notification.textContent = 'Dados limpos com sucesso!';
+                notification.style.backgroundColor = '#4cc9f0';
+                notification.classList.add('show');
+                
+                setTimeout(() => {
+                    notification.classList.remove('show');
+                    notification.textContent = 'Personagem salvo com sucesso!';
+                    notification.style.backgroundColor = '';
+                }, 3000);
+            });
+            
+            document.getElementById('clear-history').addEventListener('click', () => {
+                rollHistory = [];
+                displayRollHistory();
+            });
+            
+            // Fechar modais ao clicar fora
+            document.getElementById('history-modal').addEventListener('click', (e) => {
+                if (e.target.id === 'history-modal') {
+                    document.getElementById('history-modal').classList.remove('show');
+                }
+            });
+            
+            document.getElementById('clear-confirm-modal').addEventListener('click', (e) => {
+                if (e.target.id === 'clear-confirm-modal') {
+                    document.getElementById('clear-confirm-modal').classList.remove('show');
+                }
+            });
+            
+            // Carregar dados salvos ao iniciar
+            loadCharacterData();
+        });
+    </script>
+</body>
+</html>
